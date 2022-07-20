@@ -100,6 +100,7 @@ export class MediaPeer extends STEEmitter<
 
     private onPeerConnect = () => {
         this.debug("peer connect", this.id, this);
+        console.log("CONNECTED");
         this.remoteAddress = this.peer.remoteAddress;
         this.emit("connect", this);
     };
@@ -121,6 +122,8 @@ export class MediaPeer extends STEEmitter<
             return;
         }
 
+        console.log(data);
+
         this.downloadingSegment.bytesDownloaded += data.byteLength;
         this.downloadingSegment.pieces.push(data);
         this.emit("bytes-downloaded", this, data.byteLength);
@@ -138,10 +141,13 @@ export class MediaPeer extends STEEmitter<
             this.debug("peer segment download done", this.id, segmentId, this);
             this.terminateSegmentRequest();
             this.emit("segment-loaded", this, segmentId, segmentData.buffer);
-        } else if (this.downloadingSegment.bytesDownloaded > this.downloadingSegment.size) {
+        } 
+        else if (this.downloadingSegment.bytesDownloaded > this.downloadingSegment.size) {
             this.debug("peer segment download bytes mismatch", this.id, segmentId, this);
             this.terminateSegmentRequest();
             this.emit("segment-error", this, segmentId, "Too many bytes received for segment");
+        } else {
+            console.log("DO NOTHING");
         }
     };
 
@@ -161,7 +167,10 @@ export class MediaPeer extends STEEmitter<
     };
 
     private onPeerData = (data: ArrayBuffer) => {
+        // console.log("data: " + data);
         const command = this.getJsonCommand(data);
+
+        // console.log("COMMAND: " + JSON.stringify(command));
 
         if (command === null) {
             this.receiveSegmentPiece(data);
@@ -190,6 +199,7 @@ export class MediaPeer extends STEEmitter<
                 break;
 
             case MediaPeerCommands.SegmentData:
+                console.log("COMMAND SEGMENT DATA");
                 if (
                     this.downloadingSegmentId &&
                     this.downloadingSegmentId === command.i &&

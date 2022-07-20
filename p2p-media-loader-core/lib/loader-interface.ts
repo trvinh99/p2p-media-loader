@@ -80,6 +80,7 @@ export interface LoaderInterface {
         ((eventName: Events.SegmentAbort, listener: (segment: Segment) => void) => this);
     load: (segments: Segment[], streamSwarmId: string) => void;
     getSegment: (id: string) => Promise<Segment | undefined>;
+    setSegment: (segment: Segment) => Promise<void>;
     getSettings: () => unknown;
     getDetails: () => unknown;
     destroy: () => Promise<void>;

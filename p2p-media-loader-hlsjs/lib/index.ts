@@ -32,12 +32,14 @@ declare global {
 }
 
 export function initHlsJsPlayer(player: any): void {
+    console.log("HJS");
     if (player && player.config && player.config.loader && typeof player.config.loader.getEngine === "function") {
         initHlsJsEvents(player, player.config.loader.getEngine());
     }
 }
 
 export function initClapprPlayer(player: any): void {
+    console.log("Clappr");
     player.on("play", () => {
         const playback = player.core.getCurrentPlayback();
         if (playback._hls && !playback._hls._p2pm_linitialized) {
@@ -48,6 +50,7 @@ export function initClapprPlayer(player: any): void {
 }
 
 export function initFlowplayerHlsJsPlayer(player: any): void {
+    console.log("Flow player");
     player.on("ready", () => initHlsJsPlayer(player.engine.hlsjs ?? player.engine.hls));
 }
 

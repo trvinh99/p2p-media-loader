@@ -60,6 +60,7 @@ export class Engine extends EventEmitter {
                 callbacks: LoaderCallbacks<LoaderContext>
             ) => {
                 this.context = context;
+                // console.log("CONTEXT: " + JSON.stringify(context));
                 await this.impl.load(context, config, callbacks);
             };
 

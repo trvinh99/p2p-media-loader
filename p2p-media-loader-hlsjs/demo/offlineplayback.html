@@ -119,7 +119,6 @@
                                 data: segment.data,
                             });
                         };
-
                         transaction.onerror = (event) => reject(event);
                         transaction.oncomplete = () => resolve();
                     });
@@ -201,7 +200,7 @@
                     });
 
                     hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-                        hls.loadSource("https://storage.googleapis.com/shaka-demo-assets/angel-one-hls/hls.m3u8");
+                        hls.loadSource("https://wowza.peer5.com/live/smil:bbb_abr.smil/playlist.m3u8");
                     });
 
                     hls.attachMedia(document.getElementById("video"));

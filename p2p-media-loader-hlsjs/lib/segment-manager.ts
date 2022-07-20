@@ -216,6 +216,8 @@ export class SegmentManager {
         this.playQueue.push({ segmentUrl: url, segmentByteRange: byteRange, segmentSequence: segmentSequence });
         void this.loadSegments(segmentLocation.playlist, segmentLocation.segmentIndex, true);
 
+        console.log("LOAD SEGMENTS: " + JSON.stringify(this.playQueue));
+
         return promise;
     }
 
@@ -353,6 +355,8 @@ export class SegmentManager {
             i < playlistSegments.length && segments.length < this.settings.forwardSegmentCount;
             ++i
         ) {
+
+            console.log("loadSegments");
             const segment = playlist.manifest.segments[i];
 
             const url = playlist.getSegmentAbsoluteUrl(segment.uri);
@@ -368,6 +372,18 @@ export class SegmentManager {
                 range: byteRangeToString(byteRange),
                 priority: priority++,
             });
+
+            // const seg: Segment = {
+            //     id: "https://android-v5.s3.us-west-2.amazonaws.com/lexray5/alpha/master.m3u8+1",
+            //     url: "https://android-v5.s3.us-west-2.amazonaws.com/lexray5/alpha/segment1_0_av.ts",
+            //     masterSwarmId: "https://android-v5.s3.us-west-2.amazonaws.com/lexray5/alpha/master.m3u8",
+            //     masterManifestUri: "https://android-v5.s3.us-west-2.amazonaws.com/lexray5/alpha/master.m3u8",
+            //     streamId: "V0",
+            //     sequence: "7575802",
+            //     range: undefined,
+            //     priority: 1
+            // };
+            // console.log("segments: " + JSON.stringify(segments));
             if (requestFirstSegment && !loadSegmentId) {
                 loadSegmentId = id;
             }

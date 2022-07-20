@@ -32,14 +32,14 @@
         <title>P2P Media Loader</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <script async src="node_modules/p2p-media-loader-core/build/p2p-media-loader-core.min.js"></script>
+        <script async src="../p2p-media-loader-core/build/p2p-media-loader-core.min.js"></script>
         <script async src="p2p-graph.js"></script>
 
         <script>
             const URL_P2P_MEDIA_LOADER_HLSJS =
-                "node_modules/p2p-media-loader-hlsjs/build/p2p-media-loader-hlsjs.min.js";
+                "../p2p-media-loader-hlsjs/build/p2p-media-loader-hlsjs.min.js";
             const URL_P2P_MEDIA_LOADER_SHAKA =
-                "node_modules/p2p-media-loader-shaka/build/p2p-media-loader-shaka.min.js";
+                "../p2p-media-loader-shaka/build/p2p-media-loader-shaka.min.js";
         </script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
@@ -303,7 +303,7 @@
                                     name="url"
                                     placeholder="Please enter video url"
                                     required
-                                    value="https://akamai-axtest.akamaized.net/routes/lapd-v1-acceptance/www_c4/Manifest.m3u8"
+                                    value="https://wowza.peer5.com/live/smil:bbb_abr.smil/playlist.m3u8"
                                 />
                             </div>
                             <div class="form-group">
@@ -341,6 +341,46 @@
             </div>
 
             <script>
+
+                var strings = [
+                        "#EXTM3U",
+                        "#EXT-X-TARGETDURATION:10",
+                        "#EXTINF:10.000",
+                        "https://android-v5.s3.us-west-2.amazonaws.com/lexray5/alpha/segment1_0_av.ts",
+                        "#EXTINF:10.000",
+                        "https://android-v5.s3.us-west-2.amazonaws.com/lexray5/alpha/segment2_0_av.ts",
+                        "#EXTINF:10.000",
+                        "https://android-v5.s3.us-west-2.amazonaws.com/lexray5/alpha/segment3_0_av.ts",
+                        "#EXTINF:10.000",
+                        "https://android-v5.s3.us-west-2.amazonaws.com/lexray5/alpha/segment4_0_av.ts",
+                        "#EXT-X-ENDLIST",
+                    ];
+                    var enc = new TextEncoder("utf-8");
+
+                    function customLoaderP(onSuccess) {
+                        this.load = function (context, config, callbacks) {
+                        var url = context.url;
+                        var responseType = context.responseType;
+                        var onSuccess = callbacks.onSuccess;
+                        var onError = callbacks.onError;
+                        var onTimeOut = callbacks.onTimeout;
+                        var timeout = config.timeout;
+                        var maxRetry = config.maxRetry;
+                        var retryDelay = config.retryDelay;
+                        onSuccess(
+                            {
+                            currentTarget: {
+                                getResponseHeader: function () {
+                                return "";
+                                },
+                                responseText: strings.join("\n"),
+                                response: strings.join("\n"),
+                            },
+                            },
+                            {}
+                        );
+                        };
+                    }
                 function waitForGlobalObject(objectName, objectNextName) {
                     return new Promise((resolve) => {
                         function check() {
@@ -436,6 +476,8 @@
                         await waitForGlobalObject("Rickshaw");
                         this.initChart();
 
+                        console.log("INITED");
+
                         this.restartDemo();
                     }
 
@@ -485,6 +527,8 @@
                             config.loader.trackerAnnounce = this.trackers;
                         }
 
+                        console.log("player type: " + this.playerType);
+
                         switch (this.playerType) {
                             case "hlsjs":
                             case "clappr":
@@ -503,6 +547,7 @@
 
                                 await loadScript(URL_P2P_MEDIA_LOADER_HLSJS);
                                 this.engine = this.isP2PSupported ? new p2pml.hlsjs.Engine(config) : undefined;
+                                console.log(this.engine);
                                 break;
 
                             case "shakaplayer":
@@ -523,6 +568,7 @@
 
                                 await loadScript(URL_P2P_MEDIA_LOADER_SHAKA);
                                 this.engine = this.isP2PSupported ? new p2pml.shaka.Engine(config) : undefined;
+                                console.log(this.engine);
                                 break;
 
                             default:
@@ -532,10 +578,12 @@
 
                         switch (this.playerType) {
                             case "hlsjs":
+                            console.log("hlsjs");
                                 this.initHlsJsPlayer();
                                 break;
 
                             case "clappr":
+                                console.log("clappr");
                                 this.initClapprPlayer();
                                 break;
 
@@ -584,7 +632,10 @@
                                 break;
                         }
 
+                        // await sleep(2000);
+
                         if (this.isP2PSupported) {
+                            console.log("P2P ");
                             this.engine.on(p2pml.core.Events.PieceBytesDownloaded, this.onBytesDownloaded.bind(this));
                             this.engine.on(p2pml.core.Events.PieceBytesUploaded, this.onBytesUploaded.bind(this));
 
@@ -616,19 +667,24 @@
                         level.classList.add("form-control");
                         this.videoContainer.appendChild(level);
 
-                        var hls = new Hls({
-                            liveSyncDurationCount: this.liveSyncDurationCount,
-                            loader: this.isP2PSupported ? this.engine.createLoaderClass() : Hls.DefaultConfig.loader,
-                        });
+                        var hls = new Hls({ploader: customLoaderP});
 
                         if (this.isP2PSupported) {
+                            console.log("HJS SUPPORTED");
                             p2pml.hlsjs.initHlsJsPlayer(hls);
                         }
 
-                        hls.loadSource(this.videoUrl);
+                        // hls.loadSource(this.videoUrl);
+                        hls.loadSource(
+                            URL.createObjectURL(new Blob([enc.encode(strings.join("\n"))]))
+                        );
                         hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                            this.hlsLevelSwitcher.init(hls, level);
+                        hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                            console.log(
+                                'manifest loaded, found ' + data.levels.length + ' quality level'
+                            );
+                        
+
                         });
                     }
 
@@ -983,6 +1039,10 @@
                                 },
                             },
                         });
+                    }
+
+                    sleep(ms) {
+                        return new Promise(resolve => setTimeout(resolve, ms));
                     }
 
                     initShakaPlayer() {

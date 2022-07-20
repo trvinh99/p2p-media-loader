@@ -92,6 +92,8 @@ export class P2PMediaManager extends STEEmitter<
         if (this.debug.enabled) {
             this.debug("peer ID", this.getPeerId(), new TextDecoder().decode(this.peerId));
         }
+
+        console.log("peerID", + this.peerId);
     }
 
     public getPeers = (): Map<string, MediaPeer> => {
@@ -323,6 +325,7 @@ export class P2PMediaManager extends STEEmitter<
     };
 
     private onPieceBytesDownloaded = (peer: MediaPeer, bytes: number) => {
+        console.log("p2p bytes");
         this.emit("bytes-downloaded", bytes, peer.id);
     };
 
