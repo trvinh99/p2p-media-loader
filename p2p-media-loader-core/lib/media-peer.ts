@@ -161,8 +161,16 @@ export class MediaPeer extends STEEmitter<
     };
 
     private onPeerData = (data: ArrayBuffer) => {
+<<<<<<< Updated upstream
         const command = this.getJsonCommand(data);
 
+=======
+        console.log("data: " + data);
+        const command = this.getJsonCommand(data);
+
+        console.log("COMMAND: " + JSON.stringify(command));
+
+>>>>>>> Stashed changes
         if (command === null) {
             this.receiveSegmentPiece(data);
             return;
@@ -177,19 +185,25 @@ export class MediaPeer extends STEEmitter<
             return;
         }
 
-        this.debug("peer receive command", this.id, command, this);
+        console.log("peer receive command", this.id, command, this);
 
         switch (command.c) {
             case MediaPeerCommands.SegmentsMap:
+                console.log("MediaPeerCommands.SegmentsMap");
                 this.segmentsMap = this.createSegmentsMap(command.m);
                 this.emit("data-updated");
                 break;
 
             case MediaPeerCommands.SegmentRequest:
+                console.log("MediaPeerCommands.SegmentRequest");
                 this.emit("segment-request", this, command.i);
                 break;
 
             case MediaPeerCommands.SegmentData:
+<<<<<<< Updated upstream
+=======
+                console.log("MediaPeerCommands.SegmentData");
+>>>>>>> Stashed changes
                 if (
                     this.downloadingSegmentId &&
                     this.downloadingSegmentId === command.i &&
@@ -202,6 +216,7 @@ export class MediaPeer extends STEEmitter<
                 break;
 
             case MediaPeerCommands.SegmentAbsent:
+                console.log("MediaPeerCommands.SegmentAbsent");
                 if (this.downloadingSegmentId && this.downloadingSegmentId === command.i) {
                     this.terminateSegmentRequest();
                     this.segmentsMap.delete(command.i);
@@ -210,6 +225,7 @@ export class MediaPeer extends STEEmitter<
                 break;
 
             case MediaPeerCommands.CancelSegmentRequest:
+                console.log("MediaPeerCommands.CancelSegmentRequest");
                 // TODO: peer stop sending buffer
                 break;
 

@@ -46,7 +46,7 @@ export class HttpMediaManager extends STEEmitter<"segment-loaded" | "segment-err
 
         const segmentUrl = this.settings.segmentUrlBuilder ? this.settings.segmentUrlBuilder(segment) : segment.url;
 
-        this.debug("http segment download", segmentUrl);
+        console.log("http segment download", segmentUrl);
 
         segment.requestUrl = segmentUrl;
 
@@ -160,6 +160,7 @@ export class HttpMediaManager extends STEEmitter<"segment-loaded" | "segment-err
     };
 
     private segmentDownloadFinished = async (segment: Segment, data: ArrayBuffer, xhr: XMLHttpRequest) => {
+        console.log("segmentDownloadFinished")
         segment.responseUrl = xhr.responseURL === null ? undefined : xhr.responseURL;
 
         if (this.settings.segmentValidator) {
@@ -177,6 +178,7 @@ export class HttpMediaManager extends STEEmitter<"segment-loaded" | "segment-err
     };
 
     private segmentFailure = (segment: Segment, error: unknown, xhr: XMLHttpRequest) => {
+        console.log("segmentFailure")
         segment.responseUrl = xhr.responseURL === null ? undefined : xhr.responseURL;
 
         this.xhrRequests.delete(segment.id);

@@ -80,6 +80,10 @@ export interface LoaderInterface {
         ((eventName: Events.SegmentAbort, listener: (segment: Segment) => void) => this);
     load: (segments: Segment[], streamSwarmId: string) => void;
     getSegment: (id: string) => Promise<Segment | undefined>;
+<<<<<<< Updated upstream
+=======
+    setSegment: (streamId: string, timestamp: string, data: Uint8Array) => Promise<void> ;
+>>>>>>> Stashed changes
     getSettings: () => unknown;
     getDetails: () => unknown;
     destroy: () => Promise<void>;

@@ -28,6 +28,17 @@ export class SegmentsMemoryStorage implements SegmentsStorage {
     ) {}
 
     public storeSegment = async (segment: Segment): Promise<void> => {
+<<<<<<< Updated upstream
+=======
+        console.log("STORE SEGMENT: " + JSON.stringify(segment));
+        // const buffer = Buffer.from(segment.data!);
+
+        //  const base64String = buffer.toString('base64');
+        //  console.log("DATA: " + base64String);
+        //  var url_split = segment.id.split('/');
+        //  console.log("url_split: " + url_split);
+        //  window.localStorage.setItem(url_split.pop()!, base64String);
+>>>>>>> Stashed changes
         this.cache.set(segment.id, { segment, lastAccessed: performance.now() });
     };
 

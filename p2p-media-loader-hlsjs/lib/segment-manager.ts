@@ -61,6 +61,7 @@ export class SegmentManager {
         parser.end();
 
         const playlist = new Playlist(requestUrl, responseUrl, parser.manifest);
+        console.log("playlist: " + JSON.stringify(playlist))
 
         if (playlist.manifest.playlists) {
             this.masterPlaylist = playlist;
@@ -98,6 +99,7 @@ export class SegmentManager {
                 masterSwarmId = url.split("?")[0];
             }
             const asset = await assetsStorage.getAsset(url, undefined, masterSwarmId);
+            console.log("ASSET: " + asset);
 
             if (asset !== undefined) {
                 xhr = {
@@ -116,7 +118,10 @@ export class SegmentManager {
             }
         } else {
             xhr = await this.loadContent(url, "text");
+            console.log("ASSET UNDEFINED: ", JSON.stringify(xhr));
         }
+
+        console.log("NEXT")
 
         this.processPlaylist(url, xhr.response, xhr.responseURL);
         return xhr;
@@ -126,6 +131,7 @@ export class SegmentManager {
         url: string,
         byteRange: ByteRange
     ): Promise<{ content: ArrayBuffer | undefined; downloadBandwidth?: number }> {
+        console.log("URL: " + url)
         const segmentLocation = this.getSegmentLocation(url, byteRange);
         const byteRangeString = byteRangeToString(byteRange);
 
@@ -429,24 +435,31 @@ export class SegmentManager {
             const xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.responseType = responseType;
+            console.log("XHRRRRR: " + JSON.stringify(xhr))
 
             if (range) {
                 xhr.setRequestHeader("Range", range);
             }
 
-            xhr.addEventListener("readystatechange", () => {
+            xhr.setRequestHeader( 'Access-Control-Allow-Origin', '*');
+
+            xhr.onreadystatechange = () => {
                 if (xhr.readyState !== 4) return;
                 if (xhr.status >= 200 && xhr.status < 300) {
+                    console.log("RESOLVED XHR");
                     resolve(xhr);
                 } else {
+                    console.log("REJECTED XHR");
                     reject(xhr.statusText);
                 }
-            });
+            };
 
             const xhrSetup = (this.loader.getSettings() as { xhrSetup?: XhrSetupCallback }).xhrSetup;
             if (xhrSetup) {
                 xhrSetup(xhr, url);
             }
+
+            console.log("XHRRRRR: " + JSON.stringify(xhr))
 
             xhr.send();
         });

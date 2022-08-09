@@ -32,14 +32,30 @@ export class HlsJsLoader {
         _config: LoaderConfiguration,
         callbacks: LoaderCallbacks<LoaderContext>
     ): Promise<void> {
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
         if (((context as unknown) as { type: unknown }).type) {
+            
             try {
+                console.log("LOAD PLAYLIST: " + context.url)
                 const result = await this.segmentManager.loadPlaylist(context.url);
+<<<<<<< Updated upstream
                 this.successPlaylist(result, context, callbacks);
             } catch (e) {
                 this.error(e, context, callbacks);
+=======
+                console.log("RESULT: " + result.response);
+                this.successPlaylist(result, context, callbacks);
+            } catch (e) {
+                var e_as = e as {code: number, text: string};
+                console.log(JSON.stringify(e))
+                this.error(e_as, context, callbacks);
+>>>>>>> Stashed changes
             }
         } else if (((context as unknown) as { frag: unknown }).frag) {
+            console.log("LOAD FRAGMENT")
             try {
                 const result = await this.segmentManager.loadSegment(
                     context.url,
@@ -83,6 +99,10 @@ export class HlsJsLoader {
             loaded: xhr.response.length,
             total: xhr.response.length,
         };
+
+        console.log("xhr.responseURL: " + xhr.responseURL)
+        console.log("xhr.response: " + xhr.response)
+        console.log("stats: " + JSON.stringify(stats))
 
         callbacks.onSuccess(
             {

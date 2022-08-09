@@ -21,7 +21,7 @@
         <title>Hls.js player with P2P demo</title>
 
         <script src="../node_modules/p2p-media-loader-core/build/p2p-media-loader-core.js"></script>
-        <script src="../build/p2p-media-loader-hlsjs.js"></script>
+        <script src="../build/p2p-media-loader-hlsjs.min.js"></script>
 
         <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
@@ -38,7 +38,7 @@
         <video id="video" controls muted></video>
 
         <script>
-            if (Hls.isSupported() && p2pml.hlsjs.Engine.isSupported()) {
+            if (Hls.isSupported()){
                 var engine = new p2pml.hlsjs.Engine();
 
                 var hls = new Hls({

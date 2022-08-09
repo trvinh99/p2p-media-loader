@@ -32,6 +32,10 @@ declare global {
 }
 
 export function initHlsJsPlayer(player: any): void {
+<<<<<<< Updated upstream
+=======
+    console.log("HJSSSSSSSS");
+>>>>>>> Stashed changes
     if (player && player.config && player.config.loader && typeof player.config.loader.getEngine === "function") {
         initHlsJsEvents(player, player.config.loader.getEngine());
     }
@@ -123,6 +127,7 @@ export function initJwPlayer(player: any, hlsjsConfig: any): void {
 
 function initHlsJsEvents(player: any, engine: Engine): void {
     player.on("hlsFragChanged", (_event: string, data: any) => {
+        console.log("hlsFragChanged")
         const frag = data.frag;
         const byteRange =
             frag.byteRange.length !== 2
@@ -131,9 +136,11 @@ function initHlsJsEvents(player: any, engine: Engine): void {
         engine.setPlayingSegment(frag.url, byteRange, frag.start, frag.duration);
     });
     player.on("hlsDestroying", async () => {
+        console.log("hlsDestroying")
         await engine.destroy();
     });
     player.on("hlsError", (_event: string, errorData: { details: string }) => {
+        console.log("hlsError: " + errorData.details)
         if (errorData.details === "bufferStalledError") {
             const htmlMediaElement = (player.media === undefined
                 ? player.el_ // videojs-contrib-hlsjs
