@@ -28,26 +28,15 @@ export class SegmentsMemoryStorage implements SegmentsStorage {
     ) {}
 
     public storeSegment = async (segment: Segment): Promise<void> => {
-        console.log("STORE SEGMENT: " + JSON.stringify(segment));
-        const buffer = Buffer.from(segment.data!);
-
-         const base64String = buffer.toString('base64');
-         console.log("DATA: " + base64String);
-         var url_split = segment.id.split('/');
-         console.log("url_split: " + url_split);
-         window.localStorage.setItem(url_split.pop()!, base64String);
         this.cache.set(segment.id, { segment, lastAccessed: performance.now() });
     };
 
     public getSegmentsMap = async (): Promise<Map<string, { segment: Segment }>> => {
-        console.log("CACHE: " + JSON.stringify(this.cache));
         return this.cache;
     };
 
     public getSegment = async (id: string): Promise<Segment | undefined> => {
         const cacheItem = this.cache.get(id);
-        console.log("ID: " + id);
-        console.log("CACHE ITEM: " + JSON.stringify(cacheItem));
 
         if (cacheItem === undefined) {
             return undefined;
