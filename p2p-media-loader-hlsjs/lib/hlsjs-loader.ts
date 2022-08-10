@@ -33,13 +33,16 @@ export class HlsJsLoader {
         callbacks: LoaderCallbacks<LoaderContext>
     ): Promise<void> {
         if (((context as unknown) as { type: unknown }).type) {
+            console.log("LOAD PLAYLIST")
             try {
                 const result = await this.segmentManager.loadPlaylist(context.url);
                 this.successPlaylist(result, context, callbacks);
             } catch (e) {
-                this.error(e, context, callbacks);
+                let e_s = e as {code: number, text: string}
+                this.error(e_s, context, callbacks);
             }
         } else if (((context as unknown) as { frag: unknown }).frag) {
+            console.log("LOAD SEGMENT")
             try {
                 const result = await this.segmentManager.loadSegment(
                     context.url,
@@ -48,11 +51,14 @@ export class HlsJsLoader {
                         : { offset: context.rangeStart, length: context.rangeEnd - context.rangeStart }
                 );
                 const { content } = result;
+                console.log("content: " + content);
                 if (content !== undefined) {
                     setTimeout(() => this.successSegment(content, result.downloadBandwidth, context, callbacks), 0);
                 }
             } catch (e) {
-                setTimeout(() => this.error(e, context, callbacks), 0);
+                let e_s = e as {code: number, text: string}
+                console.log(e_s.text)
+                setTimeout(() => this.error(e_s, context, callbacks), 0);
             }
         } else {
             console.warn("Unknown load request", context);

@@ -116,6 +116,7 @@ export class SegmentManager {
             }
         } else {
             xhr = await this.loadContent(url, "text");
+            console.log("XHR RESPONSE: " + xhr.response);
         }
 
         this.processPlaylist(url, xhr.response, xhr.responseURL);
@@ -126,10 +127,12 @@ export class SegmentManager {
         url: string,
         byteRange: ByteRange
     ): Promise<{ content: ArrayBuffer | undefined; downloadBandwidth?: number }> {
+        console.log("loadSegment func")
         const segmentLocation = this.getSegmentLocation(url, byteRange);
         const byteRangeString = byteRangeToString(byteRange);
 
         if (!segmentLocation) {
+            console.log("segmentLocation NULL")
             let content: ArrayBuffer | undefined;
 
             // Not a segment from variants; usually can be: init, audio or subtitles segment, encription key etc.
@@ -158,6 +161,7 @@ export class SegmentManager {
 
                 if (masterSwarmId !== undefined && masterManifestUri !== undefined) {
                     const asset = await assetsStorage.getAsset(url, byteRangeString, masterSwarmId);
+                    console.log("ASSET: " + JSON.stringify(asset));
                     if (asset !== undefined) {
                         content = asset.data as ArrayBuffer;
                     } else {
@@ -176,6 +180,7 @@ export class SegmentManager {
             }
 
             if (content === undefined) {
+                console.log("CONTENT UNDEFINED")
                 const xhr = await this.loadContent(url, "arraybuffer", byteRangeString);
                 content = xhr.response as ArrayBuffer;
             }
@@ -201,6 +206,7 @@ export class SegmentManager {
 
         const promise = new Promise<{ content: ArrayBuffer | undefined; downloadBandwidth?: number }>(
             (resolve, reject) => {
+                // console.log("CONTENT: " + content);
                 this.segmentRequest = new SegmentRequest(
                     url,
                     byteRange,
