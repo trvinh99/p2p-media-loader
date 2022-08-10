@@ -341,6 +341,20 @@
             </div>
 
             <script>
+                var strings = [
+                        "#EXTM3U",
+                        "#EXT-X-TARGETDURATION:10",
+                        "#EXTINF:10.000",
+                        "segment1_0_av.ts",
+                        "#EXTINF:10.000",
+                        "segment2_0_av.ts",
+                        "#EXTINF:10.000",
+                        "segment3_0_av.ts",
+                        "#EXTINF:10.000",
+                        "segment4_0_av.ts",
+                        "#EXT-X-ENDLIST",
+                    ];
+
                 function waitForGlobalObject(objectName, objectNextName) {
                     return new Promise((resolve) => {
                         function check() {
@@ -406,6 +420,7 @@
                 }
 
                 class DemoApp {
+                    
                     async init() {
                         await waitForGlobalObject("p2pml", "core");
 
