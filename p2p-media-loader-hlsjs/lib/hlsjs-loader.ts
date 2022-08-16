@@ -27,10 +27,11 @@ export class HlsJsLoader {
         this.segmentManager = segmentManager;
     }
 
+
     public async load(
         context: LoaderContext,
         _config: LoaderConfiguration,
-        callbacks: LoaderCallbacks<LoaderContext>
+        callbacks: LoaderCallbacks<LoaderContext>,
     ): Promise<void> {
         if (((context as unknown) as { type: unknown }).type) {
             console.log("LOAD PLAYLIST")

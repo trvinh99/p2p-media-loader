@@ -355,6 +355,8 @@
                         "#EXT-X-ENDLIST",
                     ];
 
+                let enc = new TextEncoder();
+
                 function waitForGlobalObject(objectName, objectNextName) {
                     return new Promise((resolve) => {
                         function check() {
@@ -420,6 +422,7 @@
                 }
 
                 class DemoApp {
+
                     
                     async init() {
                         await waitForGlobalObject("p2pml", "core");
@@ -517,7 +520,8 @@
                                 }
 
                                 await loadScript(URL_P2P_MEDIA_LOADER_HLSJS);
-                                this.engine = this.isP2PSupported ? new p2pml.hlsjs.Engine(config) : undefined;
+                                let callback = "HELLO";
+                                this.engine = this.isP2PSupported ? new p2pml.hlsjs.Engine(config, callback) : undefined;
                                 break;
 
                             case "shakaplayer":
@@ -648,6 +652,7 @@
                     }
 
                     async initClapprPlayer(isShaka) {
+                        let callback = new RequestSegmentData();
                         const scriptsPromise = (async () => {
                             await loadScript("https://cdn.jsdelivr.net/npm/clappr@latest");
                             await loadScript(
@@ -662,11 +667,13 @@
                         video.className = "embed-responsive-item";
                         outer.appendChild(video);
                         this.videoContainer.appendChild(outer);
+                        console.log("URL: " + URL.createObjectURL(new Blob([enc.encode(strings.join("\n"))])))
 
                         var setup = {
                             parentId: "#video",
                             plugins: [],
-                            source: this.videoUrl,
+                            // source: this.videoUrl,
+                            source: URL.createObjectURL(new Blob([enc.encode(strings.join("\n"))])),
                             width: "100%",
                             height: "100%",
                             muted: true,
@@ -677,25 +684,25 @@
                             },
                         };
 
-                        if (isShaka) {
-                            await scriptsPromise;
-                            await loadScript(
-                                "https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.external.js"
-                            );
-                            setup.plugins.push(DashShakaPlayback);
-                            setup.shakaOnBeforeLoad = (shakaPlayerInstance) => {
-                                if (this.isP2PSupported) {
-                                    this.engine.initShakaPlayer(shakaPlayerInstance);
-                                }
-                            };
-                        } else {
+                        // if (isShaka) {
+                        //     await scriptsPromise;
+                        //     await loadScript(
+                        //         "https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.external.js"
+                        //     );
+                        //     setup.plugins.push(DashShakaPlayback);
+                        //     setup.shakaOnBeforeLoad = (shakaPlayerInstance) => {
+                        //         if (this.isP2PSupported) {
+                        //             this.engine.initShakaPlayer(shakaPlayerInstance);
+                        //         }
+                        //     };
+                        // } else {
                             setup.playback.hlsjsConfig = {
                                 liveSyncDurationCount: this.liveSyncDurationCount,
                                 loader: this.isP2PSupported
                                     ? this.engine.createLoaderClass()
                                     : Hls.DefaultConfig.loader,
                             };
-                        }
+                        // }
 
                         await scriptsPromise;
 

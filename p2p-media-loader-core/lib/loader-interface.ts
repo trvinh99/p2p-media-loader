@@ -29,6 +29,10 @@ export type Segment = {
     responseUrl?: string;
 };
 
+export interface RequestSegmentData {
+    (streamId: string, timestamp: string): void
+}
+
 export enum Events {
     /**
      * Emitted when segment has been downloaded.

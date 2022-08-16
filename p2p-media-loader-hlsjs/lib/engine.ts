@@ -15,12 +15,12 @@
  */
 
 import { EventEmitter } from "events";
-import { Events, LoaderInterface, HybridLoader, HybridLoaderSettings } from "p2p-media-loader-core";
+import { Events, LoaderInterface, HybridLoader, HybridLoaderSettings, RequestSegmentData } from "p2p-media-loader-core";
 import { SegmentManager, ByteRange, SegmentManagerSettings } from "./segment-manager";
 import { HlsJsLoader } from "./hlsjs-loader";
 import type { LoaderCallbacks, LoaderConfiguration, LoaderContext } from "hls.js/src/types/loader";
 
-export interface HlsJsEngineSettings {
+declare interface HlsJsEngineSettings {
     loader: Partial<HybridLoaderSettings>;
     segments: Partial<SegmentManagerSettings>;
 }
@@ -33,10 +33,10 @@ export class Engine extends EventEmitter {
     private readonly loader: LoaderInterface;
     private readonly segmentManager: SegmentManager;
 
-    public constructor(settings: Partial<HlsJsEngineSettings> = {}) {
+    public constructor(settings: Partial<HlsJsEngineSettings> = {}, callback: RequestSegmentData, streamId: string) {
         super();
 
-        this.loader = new HybridLoader(settings.loader);
+        this.loader = new HybridLoader(settings.loader, callback, streamId);
         this.segmentManager = new SegmentManager(this.loader, settings.segments);
 
         Object.keys(Events)

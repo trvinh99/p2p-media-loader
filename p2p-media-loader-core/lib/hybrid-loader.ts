@@ -18,7 +18,7 @@ import Debug from "debug";
 import { EventEmitter } from "events";
 import Peer from "simple-peer";
 
-import { LoaderInterface, Events, Segment } from "./loader-interface";
+import { LoaderInterface, Events, Segment, RequestSegmentData} from "./loader-interface";
 import { HttpMediaManager } from "./http-media-manager";
 import { P2PMediaManager } from "./p2p-media-manager";
 import { MediaPeerSegmentStatus } from "./media-peer";
@@ -59,6 +59,8 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
     private readonly debugSegments = Debug("p2pml:hybrid-loader-segments");
     private readonly httpManager: HttpMediaManager;
     private readonly p2pManager: P2PMediaManager;
+    private readonly callback: RequestSegmentData;
+    private readonly streamId: string;
     private segmentsStorage: SegmentsStorage;
     private segmentsQueue: Segment[] = [];
     // private readonly bandwidthApproximator = new BandwidthApproximator();
@@ -71,8 +73,11 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
         return window.RTCPeerConnection.prototype.createDataChannel !== undefined;
     };
 
-    public constructor(settings: Partial<HybridLoaderSettings> = {}) {
+    public constructor(settings: Partial<HybridLoaderSettings> = {}, callback: RequestSegmentData, streamId: string) {
         super();
+
+        this.callback = callback;
+        this.streamId = streamId;
 
         this.settings = { ...defaultSettings, ...settings };
 
@@ -221,12 +226,11 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
         //         setTimeout(this.processInitialSegmentTimeout, this.settings.httpDownloadInitialTimeoutPerSegment + 100);
         //     }
         // }
-        for (let segment of segments) {
-            let data = window.localStorage.getItem('master.m3u8+1')! ;
-            let d = Uint8Array.from(atob(data), c => c.charCodeAt(0))
-            segment.data = d
-    
-            this.segmentsStorage.storeSegment(segment)
+        for (const segment of segments) {
+            this.callback(this.streamId, segment.url.split(".")[0]);
+            // let d = Uint8Array.from(atob(data), c => c.charCodeAt(0))
+            // segment.data = d
+            // this.segmentsStorage.storeSegment(segment)
         }
 
         if (segments.length > 0) {
