@@ -32,12 +32,12 @@
         <title>P2P Media Loader</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <script async src="node_modules/p2p-media-loader-core/build/p2p-media-loader-core.min.js"></script>
+        <script async src="../p2p-media-loader-core/build/p2p-media-loader-core.min.js"></script>
         <script async src="p2p-graph.js"></script>
 
         <script>
             const URL_P2P_MEDIA_LOADER_HLSJS =
-                "node_modules/p2p-media-loader-hlsjs/build/p2p-media-loader-hlsjs.min.js";
+                "../p2p-media-loader-hlsjs/build/p2p-media-loader-hlsjs.min.js";
             const URL_P2P_MEDIA_LOADER_SHAKA =
                 "node_modules/p2p-media-loader-shaka/build/p2p-media-loader-shaka.min.js";
         </script>
@@ -341,6 +341,22 @@
             </div>
 
             <script>
+                var strings = [
+                        "#EXTM3U",
+                        "#EXT-X-TARGETDURATION:10",
+                        "#EXTINF:10.000",
+                        "segment1_0_av.ts",
+                        "#EXTINF:10.000",
+                        "segment2_0_av.ts",
+                        "#EXTINF:10.000",
+                        "segment3_0_av.ts",
+                        "#EXTINF:10.000",
+                        "segment4_0_av.ts",
+                        "#EXT-X-ENDLIST",
+                    ];
+
+                let enc = new TextEncoder();
+
                 function waitForGlobalObject(objectName, objectNextName) {
                     return new Promise((resolve) => {
                         function check() {
@@ -406,6 +422,8 @@
                 }
 
                 class DemoApp {
+
+                    
                     async init() {
                         await waitForGlobalObject("p2pml", "core");
 
@@ -633,6 +651,7 @@
                     }
 
                     async initClapprPlayer(isShaka) {
+                        // let callback = new RequestSegmentData();
                         const scriptsPromise = (async () => {
                             await loadScript("https://cdn.jsdelivr.net/npm/clappr@latest");
                             await loadScript(
@@ -647,11 +666,13 @@
                         video.className = "embed-responsive-item";
                         outer.appendChild(video);
                         this.videoContainer.appendChild(outer);
+                        console.log("URL: " + URL.createObjectURL(new Blob([enc.encode(strings.join("\n"))])))
 
                         var setup = {
                             parentId: "#video",
                             plugins: [],
                             source: this.videoUrl,
+                            // source: URL.createObjectURL(new Blob([enc.encode(strings.join("\n"))])),
                             width: "100%",
                             height: "100%",
                             muted: true,
@@ -662,25 +683,25 @@
                             },
                         };
 
-                        if (isShaka) {
-                            await scriptsPromise;
-                            await loadScript(
-                                "https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.external.js"
-                            );
-                            setup.plugins.push(DashShakaPlayback);
-                            setup.shakaOnBeforeLoad = (shakaPlayerInstance) => {
-                                if (this.isP2PSupported) {
-                                    this.engine.initShakaPlayer(shakaPlayerInstance);
-                                }
-                            };
-                        } else {
+                        // if (isShaka) {
+                        //     await scriptsPromise;
+                        //     await loadScript(
+                        //         "https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.external.js"
+                        //     );
+                        //     setup.plugins.push(DashShakaPlayback);
+                        //     setup.shakaOnBeforeLoad = (shakaPlayerInstance) => {
+                        //         if (this.isP2PSupported) {
+                        //             this.engine.initShakaPlayer(shakaPlayerInstance);
+                        //         }
+                        //     };
+                        // } else {
                             setup.playback.hlsjsConfig = {
                                 liveSyncDurationCount: this.liveSyncDurationCount,
                                 loader: this.isP2PSupported
                                     ? this.engine.createLoaderClass()
                                     : Hls.DefaultConfig.loader,
                             };
-                        }
+                        // }
 
                         await scriptsPromise;
 

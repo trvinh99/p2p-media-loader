@@ -133,6 +133,7 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
     };
 
     public load = async (segments: Segment[], streamSwarmId: string): Promise<void> => {
+        // console.log("SEGMENTS: " + JSON.stringify(segments))
         if (this.httpRandomDownloadInterval === undefined) {
             // Do once on first call
             this.httpRandomDownloadInterval = setInterval(

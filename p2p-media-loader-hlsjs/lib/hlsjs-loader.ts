@@ -37,7 +37,7 @@ export class HlsJsLoader {
                 const result = await this.segmentManager.loadPlaylist(context.url);
                 this.successPlaylist(result, context, callbacks);
             } catch (e) {
-                this.error(e, context, callbacks);
+                // this.error(e, context, callbacks);
             }
         } else if (((context as unknown) as { frag: unknown }).frag) {
             try {
@@ -52,7 +52,7 @@ export class HlsJsLoader {
                     setTimeout(() => this.successSegment(content, result.downloadBandwidth, context, callbacks), 0);
                 }
             } catch (e) {
-                setTimeout(() => this.error(e, context, callbacks), 0);
+                // setTimeout(() => this.error(e, context, callbacks), 0);
             }
         } else {
             console.warn("Unknown load request", context);
@@ -128,11 +128,11 @@ export class HlsJsLoader {
         );
     }
 
-    private error(
-        error: { code: number; text: string },
-        context: LoaderContext,
-        callbacks: LoaderCallbacks<LoaderContext>
-    ): void {
-        callbacks.onError(error, context, undefined);
-    }
+    // private error(
+    //     error: { code: number; text: string },
+    //     context: LoaderContext,
+    //     callbacks: LoaderCallbacks<LoaderContext>
+    // ): void {
+    //     callbacks.onError(error, context, undefined);
+    // }
 }

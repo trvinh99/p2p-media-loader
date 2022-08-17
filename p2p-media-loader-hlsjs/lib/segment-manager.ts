@@ -126,6 +126,7 @@ export class SegmentManager {
         url: string,
         byteRange: ByteRange
     ): Promise<{ content: ArrayBuffer | undefined; downloadBandwidth?: number }> {
+        console.log("URL: " + url)
         const segmentLocation = this.getSegmentLocation(url, byteRange);
         const byteRangeString = byteRangeToString(byteRange);
 
