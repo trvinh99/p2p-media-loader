@@ -94,6 +94,18 @@ export class HttpMediaManager extends STEEmitter<"segment-loaded" | "segment-err
         return this.xhrRequests.has(segment.id);
     };
 
+    public downloadSegment = async (segment: Segment, data: Uint8Array) => {
+        if (this.settings.segmentValidator) {
+            try {
+                await this.settings.segmentValidator({ ...segment, data: data }, "http");
+            } catch (error) {
+                console.log("segment validator failed", error);
+                return;
+            }
+        }
+        this.emit("segment-loaded", segment, data);
+    }
+
     public isFailed = (segment: Segment): boolean => {
         const time = this.failedSegments.get(segment.id);
         return time !== undefined && time > this.now();

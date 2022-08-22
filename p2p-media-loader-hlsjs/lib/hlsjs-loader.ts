@@ -43,7 +43,7 @@ export class HlsJsLoader {
                 this.error(e_s, context, callbacks);
             }
         } else if (((context as unknown) as { frag: unknown }).frag) {
-            console.log("LOAD SEGMENT")
+            console.log("LOAD SEGMENT" + context.url)
             try {
                 const result = await this.segmentManager.loadSegment(
                     context.url,
@@ -58,7 +58,7 @@ export class HlsJsLoader {
                 }
             } catch (e) {
                 let e_s = e as {code: number, text: string}
-                console.log(e_s.text)
+                console.log("ERROR: ", JSON.stringify(e))
                 setTimeout(() => this.error(e_s, context, callbacks), 0);
             }
         } else {
@@ -91,6 +91,9 @@ export class HlsJsLoader {
             total: xhr.response.length,
         };
 
+        console.log("RESPONSE URL: " + xhr.responseURL)
+        console.log("XHR RESPONSE: " + xhr.response)
+
         callbacks.onSuccess(
             {
                 url: xhr.responseURL,
@@ -108,6 +111,8 @@ export class HlsJsLoader {
         context: LoaderContext,
         callbacks: LoaderCallbacks<LoaderContext>
     ): void {
+
+        console.log("CONTENT SIZE: ", content.byteLength)
         const now = performance.now();
         const downloadTime =
             content.byteLength /
@@ -124,6 +129,10 @@ export class HlsJsLoader {
             total: content.byteLength,
         };
 
+        // const split_arr = context.url.split("/")
+        // const url = split_arr[split_arr.length - 1];
+        // console.log("context URL: " + url)
+
         callbacks.onSuccess(
             {
                 url: context.url,
@@ -133,6 +142,8 @@ export class HlsJsLoader {
             context,
             undefined
         );
+
+        console.log("AFTER ON SUCCESS");
     }
 
     private error(

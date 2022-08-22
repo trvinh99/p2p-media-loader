@@ -101,6 +101,10 @@ export class Engine extends EventEmitter {
         };
     }
 
+    public setSegment = async (id: string, data: Uint8Array): Promise<void>=> {
+        await this.loader.setSegment(id, data);
+    }
+
     public setPlayingSegment(url: string, byteRange: ByteRange, start: number, duration: number): void {
         this.segmentManager.setPlayingSegment(url, byteRange, start, duration);
     }

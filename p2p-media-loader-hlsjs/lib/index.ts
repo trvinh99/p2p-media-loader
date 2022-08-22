@@ -123,6 +123,7 @@ export function initJwPlayer(player: any, hlsjsConfig: any): void {
 
 function initHlsJsEvents(player: any, engine: Engine): void {
     player.on("hlsFragChanged", (_event: string, data: any) => {
+        console.log("hlsFragChanged: " + data)
         const frag = data.frag;
         const byteRange =
             frag.byteRange.length !== 2
@@ -134,13 +135,17 @@ function initHlsJsEvents(player: any, engine: Engine): void {
         await engine.destroy();
     });
     player.on("hlsError", (_event: string, errorData: { details: string }) => {
+        console.log('exception in ' + _event + ',stack trace:' + JSON.stringify(errorData.details));
         if (errorData.details === "bufferStalledError") {
+            console.log("bufferStalledErrorRRRRRRRR")
             const htmlMediaElement = (player.media === undefined
                 ? player.el_ // videojs-contrib-hlsjs
                 : player.media) as HTMLMediaElement | undefined; // all others
             if (htmlMediaElement) {
+                console.log("htmlMediaElement")
                 engine.setPlayingSegmentByCurrentTime(htmlMediaElement.currentTime);
             }
+            // player.hls.startLoad();
         }
     });
 }

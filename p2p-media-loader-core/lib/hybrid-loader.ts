@@ -68,6 +68,8 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
     private httpRandomDownloadInterval: ReturnType<typeof setInterval> | undefined;
     private httpDownloadInitialTimeoutTimestamp = -Infinity;
     private masterSwarmId?: string;
+    private segmentsMap: Map<string, Segment> = new Map();
+
 
     public static isSupported = (): boolean => {
         return window.RTCPeerConnection.prototype.createDataChannel !== undefined;
@@ -101,8 +103,8 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
         this.debug("loader settings", this.settings);
 
         this.httpManager = this.createHttpManager();
-        // this.httpManager.on("segment-loaded", this.onSegmentLoaded);
-        // this.httpManager.on("segment-error", this.onSegmentError);
+        this.httpManager.on("segment-loaded", this.onSegmentLoaded);
+        this.httpManager.on("segment-error", this.onSegmentError);
         // this.httpManager.on("bytes-downloaded", (bytes: number) => this.onPieceBytesDownloaded("http", bytes));
 
         this.p2pManager = this.createP2PManager();
@@ -226,11 +228,21 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
         //         setTimeout(this.processInitialSegmentTimeout, this.settings.httpDownloadInitialTimeoutPerSegment + 100);
         //     }
         // }
+        console.log("LIST SEGMENTSSSSS: " + JSON.stringify(segments))
         for (const segment of segments) {
-            this.callback(this.streamId, segment.url.split(".")[0]);
+            // let data = window.localStorage.getItem('data')! ;
             // let d = Uint8Array.from(atob(data), c => c.charCodeAt(0))
             // segment.data = d
             // this.segmentsStorage.storeSegment(segment)
+            
+            if (!this.segmentsMap.has(segment.id)) {
+                this.segmentsMap.set(segment.id, segment)
+                console.log("SEGMENTS MAPPPP: " + this.segmentsMap)
+                console.log("SEGMENT IDDDDDD: " + segment.id)
+                let split_arr = segment.url.split("/");
+                let timestamp = split_arr[split_arr.length - 1].split(".")[0]
+                this.callback(this.streamId, timestamp);
+            }
         }
 
         if (segments.length > 0) {
@@ -274,7 +286,7 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
         }
 
         let storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
-        updateSegmentsMap = this.processSegmentsQueue(storageSegments) || updateSegmentsMap;
+        // updateSegmentsMap = this.processSegmentsQueue(storageSegments) || updateSegmentsMap;
 
         if (await this.cleanSegmentsStorage()) {
             storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
@@ -285,6 +297,16 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
             this.p2pManager.sendSegmentsMapToAll(this.createSegmentsMap(storageSegments));
         }
     };
+
+    public setSegment = async (id: string, data: Uint8Array): Promise<void> => {
+        let segment = this.segmentsMap.get(id);
+        console.log("SEGMENTTTT: " + JSON.stringify(segment))
+        console.log("DATA LENGTH" + data.length)
+        if (segment != undefined) {
+            await this.httpManager.downloadSegment(segment, data)
+            this.segmentsMap.delete(id)
+        }
+    }
 
     public getSegment = async (id: string): Promise<Segment | undefined> => {
         return this.masterSwarmId === undefined ? undefined : this.segmentsStorage.getSegment(id, this.masterSwarmId);
@@ -508,37 +530,43 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
     //     this.emit(Events.PieceBytesUploaded, method, bytes, peerId);
     // };
 
-    // private onSegmentLoaded = async (segment: Segment, data: ArrayBuffer, peerId?: string) => {
-    //     this.debugSegments("segment loaded", segment.id, segment.url);
+    private onSegmentLoaded = async (segment: Segment, data: ArrayBuffer, peerId?: string) => {
+        console.log("HTTP SEGMENT LOADED")
+        this.debugSegments("segment loaded", segment.id, segment.url);
 
-    //     if (this.masterSwarmId === undefined) {
-    //         return;
-    //     }
+        console.log("masterSwarmId: " + this.masterSwarmId)
+        if (this.masterSwarmId === undefined) {
+            return;
+        }
 
-    //     segment.data = data;
-    //     segment.downloadBandwidth = this.bandwidthApproximator.getBandwidth(this.now());
+        segment.data = data;
+        // segment.downloadBandwidth = this.bandwidthApproximator.getBandwidth(this.now());
 
-    //     await this.segmentsStorage.storeSegment(segment);
-    //     this.emit(Events.SegmentLoaded, segment, peerId);
+        await this.segmentsStorage.storeSegment(segment).catch(e => {
+            console.log("ERROR STORE SEGMENT: " + e.message)
+        });
 
-    //     const storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
+        console.log("STORE SEGMENT SUCCESS")
+        this.emit(Events.SegmentLoaded, segment, peerId);
 
-    //     this.processSegmentsQueue(storageSegments);
-    //     if (!this.settings.consumeOnly) {
-    //         this.p2pManager.sendSegmentsMapToAll(this.createSegmentsMap(storageSegments));
-    //     }
-    // };
+        // const storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
 
-    // private onSegmentError = async (segment: Segment, details: unknown, peerId?: string) => {
-    //     this.debugSegments("segment error", segment.id, segment.url, peerId, details);
-    //     this.emit(Events.SegmentError, segment, details, peerId);
-    //     if (this.masterSwarmId !== undefined) {
-    //         const storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
-    //         if (this.processSegmentsQueue(storageSegments) && !this.settings.consumeOnly) {
-    //             this.p2pManager.sendSegmentsMapToAll(this.createSegmentsMap(storageSegments));
-    //         }
-    //     }
-    // };
+        // this.processSegmentsQueue(storageSegments);
+        // if (!this.settings.consumeOnly) {
+        //     this.p2pManager.sendSegmentsMapToAll(this.createSegmentsMap(storageSegments));
+        // }
+    };
+
+    private onSegmentError = async (segment: Segment, details: unknown, peerId?: string) => {
+        this.debugSegments("segment error", segment.id, segment.url, peerId, details);
+        this.emit(Events.SegmentError, segment, details, peerId);
+        if (this.masterSwarmId !== undefined) {
+            const storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
+            if (this.processSegmentsQueue(storageSegments) && !this.settings.consumeOnly) {
+                this.p2pManager.sendSegmentsMapToAll(this.createSegmentsMap(storageSegments));
+            }
+        }
+    };
 
     private getStreamSwarmId = (segment: Segment) => {
         return segment.streamId === undefined ? segment.masterSwarmId : `${segment.masterSwarmId}+${segment.streamId}`;

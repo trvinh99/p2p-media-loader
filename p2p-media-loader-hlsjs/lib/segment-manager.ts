@@ -19,7 +19,7 @@ import { Manifest, Parser } from "m3u8-parser";
 import { AssetsStorage } from "./engine";
 
 const defaultSettings: SegmentManagerSettings = {
-    forwardSegmentCount: 20,
+    forwardSegmentCount: 1,
     swarmId: undefined,
     assetsStorage: undefined,
 };
@@ -129,6 +129,7 @@ export class SegmentManager {
     ): Promise<{ content: ArrayBuffer | undefined; downloadBandwidth?: number }> {
         console.log("loadSegment func")
         const segmentLocation = this.getSegmentLocation(url, byteRange);
+        console.log("segmentLocation: " + JSON.stringify(segmentLocation))
         const byteRangeString = byteRangeToString(byteRange);
 
         if (!segmentLocation) {
@@ -303,6 +304,14 @@ export class SegmentManager {
             byteRangeToString(this.segmentRequest.segmentByteRange) === segment.range
         ) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            // var file = new Blob([segment.data!]);
+            // var a = document.createElement("a");
+            // var url = window.URL.createObjectURL(file);
+            // a.href = url;
+            // a.download = segment.id + '.ts';
+            // // document.body.appendChild(a);
+            // a.click();
+
             this.segmentRequest.onSuccess(segment.data!.slice(0), segment.downloadBandwidth);
             this.segmentRequest = null;
         }
@@ -329,7 +338,7 @@ export class SegmentManager {
             this.segmentRequest = null;
         }
     };
-
+ 
     private getSegmentLocation(
         url: string,
         byteRange: ByteRange
@@ -363,7 +372,9 @@ export class SegmentManager {
 
             const url = playlist.getSegmentAbsoluteUrl(segment.uri);
             const byteRange: ByteRange = segment.byteRange;
-            const id = this.getSegmentId(playlist, initialSequence + i);
+            // const id = this.getSegmentId(playlist, initialSequence + i);
+            let split_arr = url.split("/");
+            const id = split_arr[split_arr.length - 1].split(".")[0]
             segments.push({
                 id: id,
                 url: url,
@@ -382,6 +393,7 @@ export class SegmentManager {
         this.loader.load(segments, playlist.streamSwarmId);
 
         if (loadSegmentId) {
+            console.log("loadSegmentId: ", loadSegmentId)
             const segment = await this.loader.getSegment(loadSegmentId);
             if (segment) {
                 // Segment already loaded by loader
@@ -390,9 +402,9 @@ export class SegmentManager {
         }
     }
 
-    private getSegmentId(playlist: Playlist, segmentSequence: number): string {
-        return `${playlist.streamSwarmId}+${segmentSequence}`;
-    }
+    // private getSegmentId(playlist: Playlist, segmentSequence: number): string {
+    //     return `${playlist.streamSwarmId}+${segmentSequence}`;
+    // }
 
     private getMasterSwarmId() {
         const settingsSwarmId =
@@ -478,8 +490,10 @@ class Playlist {
         return -1;
     }
 
-    public getSegmentAbsoluteUrl(segmentUrl: string): string {
-        return new URL(segmentUrl, this.responseUrl).toString();
+    getSegmentAbsoluteUrl(segmentUrl: string) {
+        var rest = this.responseUrl.substring(0, this.responseUrl.lastIndexOf("/") + 1);
+        let abs_url = rest + segmentUrl;
+        return abs_url;
     }
 }
 
